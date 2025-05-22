@@ -51,12 +51,12 @@ else
 fi
 
 # Generate a 2048-bit RSA private key for the PostgreSQL node
-openssl genrsa -out postgres-node${NODE_NUMBER}.key 2048
+openssl genrsa -out postgres-node${NODE_NUMBER}.key 4096
 
 # Create OpenSSL configuration file with certificate requirements
 # This includes:
 #  - Distinguished name requirements
-#  - Key usage restrictions
+#  - Key usage restrictions for etcd peer and client authentication
 #  - Subject Alternative Names (DNS and IP)
 cat > temp.cnf <<EOF
 [ req ]
@@ -66,8 +66,8 @@ req_extensions = v3_req
 
 [ v3_req ]
 basicConstraints = CA:FALSE
-keyUsage = digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth
+keyUsage = critical, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth
 subjectAltName = @alt_names
 [ alt_names ]
 DNS.1 = postgres-node${NODE_NUMBER}.intranet.partridgexing.org
